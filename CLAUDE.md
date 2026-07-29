@@ -4,6 +4,8 @@ Copy this file as `CLAUDE.md` (Claude Code, global at `~/.claude/CLAUDE.md` or p
 
 Every command, hook snippet, and threshold below is real, taken from a working setup, not illustrative pseudo-code. Swap tool names if your local install differs, but keep the specificity: an agent given "use a graph tool when appropriate" behaves nothing like an agent given the exact command and the exact trigger condition.
 
+**Repo:** [github.com/ssnivlek/tokensip](https://github.com/ssnivlek/tokensip). If this file got copied on its own, the full write-up (what each tool does, measured numbers, diagrams) lives in that repo's `README.md`.
+
 ---
 
 ## 0. The one number that matters most: model tier and reasoning effort

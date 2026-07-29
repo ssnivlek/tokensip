@@ -2,17 +2,23 @@
 
 > Session cost scales by model tier × effort × turns × context size × output size, not by prompt count. Model/effort tier is the biggest lever. Context that stays in the conversation and gets resent every turn is the second.
 
+---
+
+## 0. Token optimization repo and prompt
+
+**Repo:** [github.com/ssnivlek/tokensip](https://github.com/ssnivlek/tokensip), clone it or just grab the two files below.
+
+**Prompt:** [`CLAUDE.md`](./CLAUDE.md) is the operating prompt for this whole stack, concrete rules, real commands, real hook JSON. It links back to this repo, so a copy of just that one file still points to where the rest lives.
+
 ```bash
-npx ccusage@latest daily                       # 1. see the real model/effort split, fix it first
-cp CLAUDE.md ~/.claude/CLAUDE.md                # 2. drop the operating prompt in globally
-# then install each tool below, one at a time, in order
+cp CLAUDE.md ~/.claude/CLAUDE.md   # Claude Code, global (or adapt into an always-on Cursor rule)
 ```
 
-Repo: [github.com/ssnivlek/tokensip](https://github.com/ssnivlek/tokensip)
+Then install each tool below, one at a time, in the order they appear, each section has the exact command.
 
 ---
 
-## Check this first: model tier and effort
+## 1. Check this first: model tier and effort
 
 ```bash
 npx ccusage@latest daily     # cost per day, split by model, reads local logs only
@@ -40,7 +46,7 @@ Top-tier models cost several times more per token than mid-tier, for comparable 
 
 ---
 
-## Works in both Claude Code and Cursor
+## 2. Works in both Claude Code and Cursor
 
 ### CodeGraph
 
@@ -165,7 +171,7 @@ cavekit used meaningfully fewer tokens for the same passing result. One small ta
 
 ---
 
-## Claude Code only
+## 3. Claude Code only
 
 ### context-mode
 
@@ -200,7 +206,7 @@ No manual step, capture just happens.
 
 ---
 
-## Cursor setup
+## 4. Cursor setup
 
 No tool here is exclusive to Cursor, everything started in Claude Code, but running the stack there means adapting each piece, not copying config as-is:
 
@@ -214,7 +220,7 @@ No tool here is exclusive to Cursor, everything started in Claude Code, but runn
 
 ---
 
-## Real hook vs. rule-that-needs-a-habit
+## 5. Real hook vs. rule-that-needs-a-habit
 
 | Tool | Claude Code | Cursor |
 |---|---|---|
@@ -230,16 +236,14 @@ No tool here is exclusive to Cursor, everything started in Claude Code, but runn
 
 ---
 
-## Prompt caching
+## 6. Prompt caching
 
 - Session inside the cache TTL reuses the processed prefix, pays only the delta.
 - Model switch mid-session breaks the cache.
 - CodeGraph/graphify/RTK/context-mode shrink the prefix to cache. cavemem preserves it across sessions via retrieved memory.
 - Re-emitting a large artifact (JSON, report, dashboard) twice in one session: new output, zero cache reuse, inflates recall next turn. Save to file, reference path, edit in place.
 
-## The prompt
-
-Full operating prompt, concrete rules/commands/hook JSON, no vague advice: [`CLAUDE.md`](https://github.com/ssnivlek/tokensip/blob/main/CLAUDE.md).
+**Repo again:** [github.com/ssnivlek/tokensip](https://github.com/ssnivlek/tokensip), [`CLAUDE.md`](./CLAUDE.md) is the copy-pasteable version of everything above.
 
 ## Quick decisions
 
