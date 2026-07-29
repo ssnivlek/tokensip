@@ -2,6 +2,14 @@
 
 > Session cost scales by model tier × effort × turns × context size × output size, not by prompt count. Model/effort tier is the biggest lever. Context that stays in the conversation and gets resent every turn is the second.
 
+**Use this repo, don't just read about it:**
+
+1. Drop [`CLAUDE.md`](./CLAUDE.md) into `~/.claude/CLAUDE.md` (Claude Code, global) or a project's `CLAUDE.md`, or adapt it into an always-on Cursor rule. Its rules apply even before any tool below is installed.
+2. Install the tools one at a time, in the order they appear below, each section has the exact command.
+3. Run `npx ccusage@latest daily` before anything else, fixing the model/effort default (section 0) is the single highest-leverage change here.
+
+Everything below is the reference for what each piece does and why. Repo: https://github.com/ssnivlek/tokensip
+
 ---
 
 ## Check this first: model tier and effort
