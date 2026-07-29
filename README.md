@@ -269,3 +269,17 @@ No tool here is exclusive to Cursor, everything started in Claude Code, but runn
 | Switching to an unrelated task | Clear or compact |
 | About to re-emit a large report/JSON again | Don't, save to a file |
 | Task genuinely needs heavy reasoning | Escalate model/effort manually, then drop back |
+
+## References
+
+| Topic | Link |
+|---|---|
+| Full operating prompt (concrete rules, real commands, real hook JSON) | [`CLAUDE.md`](./CLAUDE.md) |
+| ccusage (local usage/cost analysis) | [npm: ccusage](https://www.npmjs.com/package/ccusage) |
+| CodeGraph | [npm: @colbymchenry/codegraph](https://www.npmjs.com/package/@colbymchenry/codegraph) |
+| graphify | [PyPI: graphifyy](https://pypi.org/project/graphifyy/) |
+| RTK | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) |
+| caveman | [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| cavekit | [github.com/JuliusBrussee/cavekit](https://github.com/JuliusBrussee/cavekit) |
+| cavemem | [npm: cavemem](https://www.npmjs.com/package/cavemem) |
+| context-mode | [github.com/mksglu/context-mode](https://github.com/mksglu/context-mode) |
