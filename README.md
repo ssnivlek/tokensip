@@ -50,6 +50,8 @@ Top-tier models cost several times more per token than mid-tier, for comparable 
 
 ### CodeGraph
 
+**Install:** `npm install -g @colbymchenry/codegraph`, then `codegraph init` inside any repo to index it.
+
 Per-repo symbol/call graph (SQLite), `.codegraph/` at project root.
 
 ```bash
@@ -72,6 +74,8 @@ Auto-injects a hint every prompt:
 No `.codegraph/` in a directory → tool doesn't apply, indexing is opt-in (`codegraph init`).
 
 ### graphify
+
+**Install:** `pipx install graphifyy` (the real PyPI package name has a double `y`, `graphify` alone is a different, unrelated package). The CLI itself is invoked as `graphify`, not `graphifyy`.
 
 Broader knowledge graph: code + docs + config + any input, community detection. Per-project (`graphify-out/graph.json`) plus one merged global graph (`~/.graphify/global-graph.json`).
 
@@ -114,6 +118,8 @@ A scheduled low-priority job (e.g. launchd, ~4h interval, skips if a session is 
 
 ### RTK
 
+**Install:** repo and install instructions at [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk), a Rust binary, no npm/pip package, grab the release binary for your platform from there.
+
 Compresses shell output (`git status`, `grep`, `ls`, tests) before it hits context.
 
 ```json
@@ -137,13 +143,13 @@ rtk -vv <cmd>          # verbose, still filtered
 
 ### caveman suite
 
-Same author, one package, three pieces:
+Same author (JuliusBrussee), three separate repos/packages, install each independently:
 
-| Piece | What it does |
-|---|---|
-| **caveman** | Compresses the agent's own prose (drops articles/filler/pleasantries, keeps code/commands verbatim) |
-| **cavekit** | `grill → spec → research → review → build → check` loop over one `SPEC.md`, no sub-agents |
-| **cavemem** | Persistent memory across sessions |
+| Piece | Install | What it does |
+|---|---|---|
+| **caveman** | Claude Code plugin: `/plugin marketplace add JuliusBrussee/caveman` then `/plugin install caveman@caveman`. Repo: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Compresses the agent's own prose (drops articles/filler/pleasantries, keeps code/commands verbatim) |
+| **cavekit** | Repo: [github.com/JuliusBrussee/cavekit](https://github.com/JuliusBrussee/cavekit), follow that repo's own install steps (installer copies skill files into `~/.agents/skills/`, symlinked into `~/.claude/skills/`) | `grill → spec → research → review → build → check` loop over one `SPEC.md`, no sub-agents |
+| **cavemem** | `npm install -g cavemem` | Persistent memory across sessions |
 
 **caveman levels:**
 
@@ -174,6 +180,8 @@ cavekit used meaningfully fewer tokens for the same passing result. One small ta
 ## 3. Claude Code only
 
 ### context-mode
+
+**Install:** Claude Code plugin: `/plugin marketplace add mksglu/context-mode` then `/plugin install context-mode@context-mode`. Repo: [github.com/mksglu/context-mode](https://github.com/mksglu/context-mode).
 
 Runs processing in an isolated sandbox, indexes the result, returns only the derived conclusion. RTK compresses one command's output, context-mode processes (filter/count/aggregate) a whole dataset without raw bytes touching the conversation.
 
