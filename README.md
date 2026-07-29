@@ -28,6 +28,8 @@ Top-tier models cost several times more per token than mid-tier, for comparable 
 - Switching model mid-session breaks prompt cache, reprocesses the whole prefix. Batch tier changes at session boundaries.
 - Re-check with `ccusage` periodically, defaults drift silently.
 
+![Model / effort tier routing](./assets/model-effort-tier.png)
+
 ---
 
 ## Works in both Claude Code and Cursor
@@ -68,7 +70,16 @@ graphify explain "<concept>"
 
 **Estimated:** ~1-3K tokens per scoped query vs ~10-20K reading the full `GRAPH_REPORT.md` or grep-looping. **~75-85%.**
 
-**No automatic hook.** Has to be called on purpose, every time, that's the opposite of CodeGraph. Forgetting it exists mid-session regresses straight back to raw grep. A Cursor `alwaysApply` rule reminds, it doesn't enforce.
+**Claude Code: real hook, not just a reminder.** `graphify claude install` (run once, from the user's home directory so it lands in the global `~/.claude/settings.json`, not a project-local one) registers a `PreToolUse` hook that blocks `Bash|Grep` and `Read|Glob` until `graphify query` has run, matching CodeGraph's automation tier:
+
+```json
+"PreToolUse": [
+  { "matcher": "Bash|Grep", "hooks": [ { "type": "command", "command": "graphify hook-guard search" } ] },
+  { "matcher": "Read|Glob", "hooks": [ { "type": "command", "command": "graphify hook-guard read" } ] }
+]
+```
+
+**Cursor: still just a reminder, not a real block.** `graphify cursor install` writes a `.cursor/rules/graphify.mdc` (`alwaysApply: true`), but Cursor has no equivalent blocking mechanism, confirmed in the tool's own source, not a config gap to fix. Forgetting it exists there still regresses straight back to raw grep.
 
 ```bash
 graphify extract . --backend claude-cli --global --as "<project-name>"
@@ -84,6 +95,8 @@ Not itself a token saver, `graphify query`/`explain`/`path` are. It's for browsi
 Re-indexing many projects back to back can spawn several model subprocesses at once and exhaust memory, do one at a time.
 
 A scheduled low-priority job (e.g. launchd, ~4h interval, skips if a session is active or load is high) can re-merge and re-export automatically, only when a project's graph actually changed.
+
+![Code exploration architecture: CodeGraph vs graphify](./assets/code-exploration.png)
 
 ### RTK
 
@@ -161,6 +174,8 @@ ctx_fetch_and_index(url)                # index a page instead of pulling it who
 
 `ctx_search(sort: "timeline")` pulls captured decisions/errors/prompts, survives clear/compact.
 
+![Shell and sandbox architecture: RTK and context-mode as trust boundaries](./assets/shell-sandbox.png)
+
 ### cavemem automation
 
 ```json
@@ -172,6 +187,8 @@ ctx_fetch_and_index(url)                # index a page instead of pulling it who
 ```
 
 No manual step, capture just happens.
+
+![Hook lifecycle, cavekit loop, and prompt cache decision](./assets/hooks-cavekit-cache.png)
 
 ---
 
@@ -186,7 +203,7 @@ Nothing today. Every tool above runs the same in both editors, or is Claude-Code
 | Tool | Claude Code | Cursor |
 |---|---|---|
 | CodeGraph | Auto, `UserPromptSubmit` hook | MCP, same auto hint |
-| graphify | **No hook**, active call required | `alwaysApply` rule, doesn't block |
+| graphify | `PreToolUse` hook (`hook-guard search`/`read`), always on since `graphify claude install` | `alwaysApply` rule, doesn't block |
 | RTK | `PreToolUse` hook, always on | Equivalent hook, always on |
 | caveman | Active plugin | Editor rule, same effect |
 | cavekit | Skill system | Symlinked skills |
