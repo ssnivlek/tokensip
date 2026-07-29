@@ -10,7 +10,7 @@ Every command, hook snippet, and threshold below is real, taken from a working s
 
 Before any tool below, this is the single biggest lever, bigger than every other rule combined. Model tier and reasoning effort are a straight price multiplier on every token in the session, compression tools reduce token *count*, tier/effort changes the *price per token*, and the two stack multiplicatively.
 
-Measured on one real account's local usage history (via `npx ccusage@latest daily` and `npx ccusage@latest session`, which read Claude Code's local JSONL logs directly, no API call needed): a top-tier model (Opus-class) accounted for **~88% of all spend** across every logged day, a second-tier model (Sonnet-class) the remaining ~12%, at roughly 7x lower cost per session for comparable work. The three most expensive individual sessions in that history ($326, $226, $145) were all top-tier-model sessions.
+Check the real default with `npx ccusage@latest daily` and `npx ccusage@latest session` (reads Claude Code's local JSONL logs directly, no API call needed). Top-tier models cost several times more per token than mid-tier for comparable day-to-day work, and the most expensive individual sessions tend to be the ones left on a top-tier model by default rather than by deliberate choice.
 
 Concrete rule:
 - Set a cheap, capable model as the actual default, not just an intention. In Claude Code, that means an explicit `"model"` key in `~/.claude/settings.json` (global) or the project's `.claude/settings.json`, e.g. `"model": "claude-sonnet-5"`. Without an explicit default, a session falls back to whatever was last manually selected, or to a "fast"/highest-tier mode if one exists, and that default silently becomes the expensive one.
