@@ -192,9 +192,17 @@ No manual step, capture just happens.
 
 ---
 
-## Cursor only
+## Cursor setup
 
-Nothing today. Every tool above runs the same in both editors, or is Claude-Code-only with a lighter Cursor equivalent (table below).
+No tool here is exclusive to Cursor, everything started in Claude Code, but running the stack there means adapting each piece, not copying config as-is:
+
+- **CodeGraph**: MCP registration works identically, no adaptation needed.
+- **graphify**: `graphify cursor install` writes `.cursor/rules/graphify.mdc` instead of a real hook, reminder only, does not block (see the table below).
+- **RTK**: needs its own hook wired into Cursor's `hooks.json`, a separate setup step from Claude Code's `settings.json`, same end effect once done.
+- **caveman**: an editor rule instead of a plugin, same effect, different install path.
+- **cavekit**: skills symlinked in instead of surfaced through the Skill tool, same invocation once wired.
+- **cavemem**: MCP query-only, no automatic capture at all, a real functional gap, not just a different config path. Query it actively at the start of relevant work.
+- **context-mode**: not available in Cursor today, no equivalent.
 
 ---
 
