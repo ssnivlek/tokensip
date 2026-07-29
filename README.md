@@ -90,6 +90,14 @@ graphify export obsidian --graph ~/.graphify/global-graph.json --dir <vault-dir>
 
 That export is for human browsing, it is not itself a token-saving mechanism, the query/path/explain commands above are. Re-indexing many projects back-to-back with a CLI-backed extraction can spawn several concurrent model subprocesses and exhaust memory, do one project at a time and check system memory between runs if extracting more than a couple.
 
+### The Obsidian vault: the human-readable layer on top of the graph
+
+The merged global graph (`~/.graphify/global-graph.json`) is great for an agent to query, but not something a human opens directly. The export command above turns it into an Obsidian vault with ready-made table views (Everything, By community, Code only, Rationale, Concepts, Documents, Communities) for browsing the same graph visually.
+
+This export isn't the token-saving mechanism itself, that's still `graphify query`/`explain`/`path`, it's the bridge for human review: open the vault and browse community by community to understand what the graph actually captured, instead of asking the agent to re-summarize everything (which would cost tokens for no reason).
+
+A scheduled low-priority background job (e.g. a launchd job on macOS, roughly every 4 hours, low CPU/IO priority, skipping the run entirely if an active coding session or high system load is detected) can keep this in sync automatically: re-merge the global graph and re-export the vault only when at least one project's underlying graph actually changed, so it never fights an active session for resources and never does pointless work when nothing changed.
+
 ### RTK (token-optimized CLI proxy)
 
 Compresses **shell command output** before it ever enters the model's context (`git status`, `grep`, `ls`, test runs). Not about code structure, about the raw text a terminal command would otherwise return.
