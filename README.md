@@ -16,6 +16,28 @@ cp CLAUDE.md ~/.claude/CLAUDE.md   # Claude Code, global (or adapt into an alway
 
 Then install each tool below, one at a time, in the order they appear, each section has the exact command.
 
+**Global vs. per-project, and what old repos need:** some installs run once and apply everywhere automatically. Others write into a specific project directory (`.codegraph/`, `.cursor/rules/`, a graph file) and have to be repeated in every repo, old or new, nothing retroactively applies itself to a repo that already existed before the install.
+
+| Tool | Global (run once) | Per-project (repeat in every repo, old and new) |
+| --- | --- | --- |
+| CodeGraph | Binary install | `codegraph init` in each repo |
+| graphify | Binary install, `graphify claude install` (hook) | `graphify extract . --global --as "<name>"` in each repo |
+| RTK | `rtk init -g` (Claude Code), `rtk init -g --agent cursor` (Cursor), fully global, nothing else needed | — |
+| caveman | `npm install -g @juliusbrussee/caveman-code`, or the Claude Code plugin | Other editors incl. Cursor: `npx skills add JuliusBrussee/caveman -a cursor` in each repo |
+| cavekit | Claude Code plugin (`/plugin marketplace add`) | Other editors incl. Cursor: `npx skills add JuliusBrussee/cavekit` in each repo |
+| cavemem | `npm install -g cavemem`, hooks in global `~/.claude/settings.json` | — |
+| context-mode | Claude Code plugin, Claude Code only | — |
+
+To roll a per-project tool out across many existing repos at once instead of doing it by hand one at a time (bash example, PowerShell users need the equivalent loop, the underlying commands are identical either way):
+
+```bash
+for d in ~/path/to/projects/*/; do
+  ( cd "$d" && codegraph init && graphify extract . --global --as "$(basename "$d")" )
+done
+```
+
+**Have an agent run this whole setup for you, phased and interactive, not all at once:** paste `CLAUDE.md` in and ask it to install the stack. It should go phase by phase (model/effort, then CodeGraph, then graphify, then RTK, then the caveman suite, then context-mode), ask before each one, skip whatever you decline, and once CodeGraph/graphify exist, use them to check state instead of raw `cat`/`grep`, which keeps the install itself cheap. No `.sh` script is handed to you, every command works the same on macOS, Linux, and Windows (PowerShell equivalents where the shell differs). See CLAUDE.md section 10 for the exact instruction this follows.
+
 ---
 
 ## 1. Check this first: model tier and effort
@@ -106,19 +128,38 @@ graphify export obsidian --graph ~/.graphify/global-graph.json --dir <vault-dir>
 
 ### Obsidian vault
 
-Human-readable layer over the merged global graph. Ready-made table views: Everything, By community, Code only, Rationale, Concepts, Documents, Communities.
+```bash
+graphify export obsidian --graph ~/.graphify/global-graph.json --dir <vault-dir>
+```
 
-Not itself a token saver, `graphify query`/`explain`/`path` are. It's for browsing the graph instead of asking the agent to re-summarize it.
+Human-readable layer over the merged global graph, ready-made table views: Everything, By community, Code only, Rationale, Concepts, Documents, Communities.
+
+Not itself a token saver, `graphify query`/`explain`/`path` are. It's for browsing the graph instead of asking the agent to re-summarize it, which would cost tokens for no reason.
 
 Re-indexing many projects back to back can spawn several model subprocesses at once and exhaust memory, do one at a time.
 
-A scheduled low-priority job (e.g. launchd, ~4h interval, skips if a session is active or load is high) can re-merge and re-export automatically, only when a project's graph actually changed.
+**Optional, ask twice, not once:** whether to export a vault at all is one decision, whether to keep it refreshed automatically is a separate one, don't bundle them. If yes to auto-refresh, ask for an interval too (4h is a reasonable default). The job body is always the same two commands (`graphify update .` then the export above, skip the export if nothing changed), the scheduling mechanism is whatever the OS actually supports:
+
+| OS | Mechanism |
+|---|---|
+| macOS | `launchd` user agent, `StartInterval` in seconds, low `Nice`, skip if load is high or a session looks active |
+| Linux | `cron` entry at the chosen interval, or a `systemd` user timer |
+| Windows | `schtasks /create` at the chosen interval, lowest priority class |
+
+Always tell the user the exact command to turn it back off (`launchctl unload`, remove the `crontab` line, `schtasks /delete`), a background job nobody can find or stop is worse than not having one.
 
 ![Code exploration architecture: CodeGraph vs graphify](./assets/code-exploration.png)
 
 ### RTK
 
-**Install:** repo and install instructions at [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk), a Rust binary, no npm/pip package, grab the release binary for your platform from there.
+**Install:** grab the binary from [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) (Rust, no npm/pip package), then:
+
+```bash
+rtk init -g                     # Claude Code, global, one time
+rtk init -g --agent cursor      # Cursor, global, one time
+```
+
+Both are real hook installs (`PreToolUse` for Claude Code, `hooks.json` for Cursor), not a manual DIY config edit. RTK also supports Windsurf, Gemini CLI, Codex, Cline, and others, see the repo's "Supported Agents" table for the exact flag.
 
 Compresses shell output (`git status`, `grep`, `ls`, tests) before it hits context.
 
@@ -145,11 +186,15 @@ rtk -vv <cmd>          # verbose, still filtered
 
 Same author (JuliusBrussee), three separate repos/packages, install each independently:
 
-| Piece | Install | What it does |
-|---|---|---|
-| **caveman** | Claude Code plugin: `/plugin marketplace add JuliusBrussee/caveman` then `/plugin install caveman@caveman`. Repo: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Compresses the agent's own prose (drops articles/filler/pleasantries, keeps code/commands verbatim) |
-| **cavekit** | Repo: [github.com/JuliusBrussee/cavekit](https://github.com/JuliusBrussee/cavekit), follow that repo's own install steps (installer copies skill files into `~/.agents/skills/`, symlinked into `~/.claude/skills/`) | `grill → spec → research → review → build → check` loop over one `SPEC.md`, no sub-agents |
-| **cavemem** | `npm install -g cavemem` | Persistent memory across sessions |
+| Piece | Claude Code install | Cursor / 30+ other editors install | What it does |
+|---|---|---|---|
+| **caveman** | `npm install -g @juliusbrussee/caveman-code`, or the Claude Code plugin (`/plugin marketplace add JuliusBrussee/caveman` then `/plugin install caveman@caveman`) | `npx skills add JuliusBrussee/caveman -a cursor` (per project, via the `skills` CLI) | Compresses the agent's own prose (drops articles/filler/pleasantries, keeps code/commands verbatim) |
+| **cavekit** | Claude Code plugin: `/plugin marketplace add juliusbrussee/cavekit` then `/plugin install ck@cavekit` (adds `/ck:spec`, `/ck:build`, `/ck:check`, etc.) | `npx skills add JuliusBrussee/cavekit` (per project, via the `skills` CLI) | `grill → spec → research → review → build → check` loop over one `SPEC.md`, no sub-agents |
+| **cavemem** | `npm install -g cavemem`, global, hooks in `~/.claude/settings.json` | Not available, MCP query-only, see the automation table below | Persistent memory across sessions |
+
+Repos: [caveman](https://github.com/JuliusBrussee/caveman), [cavekit](https://github.com/JuliusBrussee/cavekit). The `npx skills add` command is the same generic "skills registry" installer used by other skill packs (e.g. [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), see the callout below), it works across Cursor, Windsurf, Cline, Codex, and 30+ other agents, not just these two.
+
+> **Also worth knowing about, different job:** [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) is a separate pack of 24 production-engineering skills (TDD, incremental implementation, source-grounded framework decisions, context engineering) aimed at code *quality*, not token *cost*. Not a replacement for cavekit, a complementary pick if the goal is better-engineered code rather than a leaner spec loop. Install: `npx skills add addyosmani/agent-skills`.
 
 **caveman levels:**
 
@@ -216,15 +261,21 @@ No manual step, capture just happens.
 
 ## 4. Cursor setup
 
-No tool here is exclusive to Cursor, everything started in Claude Code, but running the stack there means adapting each piece, not copying config as-is:
+Run these, in order, once per machine or CI image (global) or once per repo (per-project, including every existing repo, nothing here retroactively applies to a repo that already existed):
 
-- **CodeGraph**: MCP registration works identically, no adaptation needed.
-- **graphify**: `graphify cursor install` writes `.cursor/rules/graphify.mdc` instead of a real hook, reminder only, does not block (see the table below).
-- **RTK**: needs its own hook wired into Cursor's `hooks.json`, a separate setup step from Claude Code's `settings.json`, same end effect once done.
-- **caveman**: an editor rule instead of a plugin, same effect, different install path.
-- **cavekit**: skills symlinked in instead of surfaced through the Skill tool, same invocation once wired.
-- **cavemem**: MCP query-only, no automatic capture at all, a real functional gap, not just a different config path. Query it actively at the start of relevant work.
-- **context-mode**: not available in Cursor today, no equivalent.
+```bash
+# global, one time
+rtk init -g --agent cursor                                        # RTK: real hooks.json hook
+
+# per project (repeat in every repo, old and new)
+npx skills add JuliusBrussee/caveman -a cursor                     # caveman
+npx skills add JuliusBrussee/cavekit                                # cavekit
+graphify cursor install                                            # graphify: writes .cursor/rules/graphify.mdc
+```
+
+CodeGraph's MCP registration works identically in Cursor already, no separate step. Two real gaps, not solved by more config: **cavemem** has no automatic capture in Cursor at all (MCP query-only, query it actively); **context-mode** has no Cursor version today.
+
+The one thing that stays genuinely different, not just a different command: `graphify cursor install` writes a reminder rule (`alwaysApply: true`), not a real hook, it does not block the way `rtk init -g --agent cursor` does. That's a limitation confirmed in graphify's own source, not a step you're missing.
 
 ---
 
@@ -283,3 +334,4 @@ No tool here is exclusive to Cursor, everything started in Claude Code, but runn
 | cavekit | [github.com/JuliusBrussee/cavekit](https://github.com/JuliusBrussee/cavekit) |
 | cavemem | [npm: cavemem](https://www.npmjs.com/package/cavemem) |
 | context-mode | [github.com/mksglu/context-mode](https://github.com/mksglu/context-mode) |
+| addyosmani/agent-skills (complementary, code quality not token cost) | [github.com/addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) |
