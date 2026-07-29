@@ -29,6 +29,8 @@ Everything below exists to keep accumulated context size down without losing the
 
 ## 2. Code exploration: repo-scoped graph before grep
 
+**Install:** `npm install -g @colbymchenry/codegraph`, then `codegraph init` inside any repo to index it. If this command is not available, install it before following the rest of this section.
+
 Before any exploratory `grep`/`find`/`Read` in a directory that has a `.codegraph/` folder at its root:
 
 ```bash
@@ -49,6 +51,8 @@ If a directory has no `.codegraph/`, don't force indexing mid-task, that's a set
 
 ## 3. Cross-project or non-code knowledge: graph query before broad search
 
+**Install:** `pipx install graphifyy` (real PyPI package name has a double `y`, `graphify` alone is a different, unrelated package; the CLI itself is invoked as `graphify`).
+
 Before any exploratory search that spans more than one repo, or touches docs/config rather than pure code, in a directory that has `graphify-out/graph.json`:
 
 ```bash
@@ -65,6 +69,8 @@ Estimated cost: a scoped query, ~1-3K tokens (a small subgraph) versus ~10-20K t
 Merged project graphs can be exported to a human-browsable Obsidian vault (`graphify export obsidian --graph <path> --dir <vault-dir>`), that export is for human review, not an agent token-saving mechanism, the query commands above are.
 
 ## 4. Shell output: compress before it enters context
+
+**Install:** repo and release binaries at [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) (Rust, no npm/pip package, grab the release for your platform).
 
 Route ordinary shell commands (`git status`, `grep`, `ls`, test runs) through a compressing proxy instead of letting raw terminal output land in context. Wired via a `PreToolUse` hook matching `Bash` in `~/.claude/settings.json`:
 
@@ -89,6 +95,8 @@ Measured, native telemetry, not estimated: 340 commands in one session, 22.6K to
 
 ## 5. Large data processing: sandbox it, don't inline it
 
+**Install (Claude Code plugin):** `/plugin marketplace add mksglu/context-mode` then `/plugin install context-mode@context-mode`. Repo: [github.com/mksglu/context-mode](https://github.com/mksglu/context-mode).
+
 Before pulling a large tool result, file, or command output directly into the conversation to filter, count, parse, or aggregate it, do that work in an isolated sandbox and bring back only the derived answer:
 
 ```
@@ -104,11 +112,15 @@ If the harness auto-captures decisions, errors, and prompts into a searchable ti
 
 ## 6. Response prose: match compression to the moment
 
+**Install (Claude Code plugin):** `/plugin marketplace add JuliusBrussee/caveman` then `/plugin install caveman@caveman`. Repo: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
+
 If a prose-compression mode exists, default to its least lossy setting for ordinary responses, escalate to a more aggressive setting only during clearly routine, repetitive stretches (e.g. running the same command across many directories in sequence, where nuance genuinely doesn't matter), and reserve the most aggressive tier exclusively for internal agent-to-agent handoffs, never for a final message a human is meant to read carefully.
 
 Concrete rule for stepping back down to full, uncompressed language regardless of the configured default: security warnings, irreversible-action confirmations, multi-step sequences where a dropped word risks misreading, and any moment the user asks a clarifying question or seems confused. Resume the compressed mode once that moment has passed.
 
 ## 7. Spec-driven and multi-step work: lightweight loop over heavy ceremony, by default
+
+**Install:** repo [github.com/JuliusBrussee/cavekit](https://github.com/JuliusBrussee/cavekit), follow that repo's own install steps (the installer copies skill files into `~/.agents/skills/`, symlinked into `~/.claude/skills/`).
 
 Default to a lightweight, single-file spec/build/verify loop instead of a heavier framework built around separate sub-agent phases for brainstorming, planning, execution, and verification. Concretely, that looks like: `spec` (write or update a single `SPEC.md`) → `build` (implement against it) → `check` (audit code against the spec, report drift), reaching for auxiliary steps (a pre-spec interrogation pass, a research pass, an adversarial review pass, a design-deepening pass, a bug-to-invariant backprop step) only when the task actually earns that ceremony.
 
@@ -117,6 +129,8 @@ This is evidence-based, not a stylistic preference: an isolated benchmark (same 
 That result is for one small, well-defined task, it does not prove the lightweight loop wins at every scale. Reserve the heavier, sub-agent-phased approach for genuinely large or ambiguous work: multi-feature scope, high requirement uncertainty, where the extra structure has room to pay for itself across a much bigger deliverable. If both approaches are available in the same environment, pick one per task and stick with it, don't let them compete mid-task, that produces duplicate process artifacts describing the same work.
 
 ## 8. Memory across sessions: don't re-derive what was already captured
+
+**Install:** `npm install -g cavemem`.
 
 If a persistent-memory mechanism with automatic capture exists (hooked into session start, prompt submit, tool use, and session end), let it run and query it rather than manually re-summarizing context it already captured. If the current environment only offers memory as a manual, query-only mechanism with no automatic capture, that's a real functional gap in that environment specifically, not a false alarm, actively query it at the start of relevant work instead of assuming it already has the session's history the way the fully-hooked environment would.
 
